@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1527807879 source:d:\programavimas\sfml\kryziukai\main.cpp
+1527808167 source:d:\programavimas\sfml\kryziukai\main.cpp
 	<SFML/Graphics.hpp>
 	<iostream>
 

@@ -1,5 +1,4 @@
 #include <SFML/Graphics.hpp>
-#include <iostream>
 
 struct Langelis
 {
@@ -28,6 +27,7 @@ public:
     bool Ejimas(int ejnr);
     bool PriklausoLang(sf::Vector2i poz, int lnr);
     void KeistiTeksta(int ejnr, bool uzimtas);
+    bool ArBaiges();
     void Eiga();
 };
 
@@ -38,7 +38,7 @@ void Zaidimas::Ekranas()
 
 bool Zaidimas::TeksturuNuskaitymas()
 {
-    return Lenta.loadFromFile("images/lenta.png") && figx.loadFromFile("images/figx.png") && figo.loadFromFile("images/figo.png");
+    return Lenta.loadFromFile("images/lenta.png") && figx.loadFromFile("images/figxp.png") && figo.loadFromFile("images/figop.png");
 }
 
 bool Zaidimas::SriftoNuskaitymas()
@@ -93,11 +93,17 @@ void Zaidimas::KeistiTeksta(int ejnr, bool uzimtas)
 {
     std::string zaid;
     if(uzimtas)
+    {
         zinute.setString("Sis langelis yra uzimtas, bandykite kita");
+        zinute.setPosition(0, 0);
+        zinute.move(309 - zinute.getLocalBounds().width/2, 30);
+    }
     else
     {
         zaid = (ejnr % 2 == 1) ? "1-o Zaidejo eile" : "2-o Zaidejo eile";
         zinute.setString(zaid);
+        zinute.setPosition(0, 0);
+        zinute.move(309 - zinute.getLocalBounds().width/2, 30);
     }
 
 }
@@ -105,12 +111,10 @@ void Zaidimas::KeistiTeksta(int ejnr, bool uzimtas)
 bool Zaidimas::Ejimas(int ejnr)
 {
     sf::Vector2i pos = sf::Mouse::getPosition(window);
-    std::cout << pos.x  << " " << pos.y << std::endl;
     for(int i = 0; i < 9; i++)
     {
         if(PriklausoLang(pos, i))
         {
-            std::cout << " Priklauso " << i << " langeliui" << std::endl;
             if(L[i].tipas == 0)
             {
                 P[ejnr] = (ejnr%2) ? Pfigo : Pfigx;
@@ -128,6 +132,17 @@ bool Zaidimas::Ejimas(int ejnr)
     }
 }
 
+bool Zaidimas::ArBaiges()
+{
+    for(int i = 0; i < 3; i++)
+    {
+        for(int j = 0; j < 3; j++)
+        {
+
+        }
+    }
+}
+
 void Zaidimas::Eiga()
 {
     int ejnr = 0;
@@ -139,10 +154,12 @@ void Zaidimas::Eiga()
         {
             if(ivykis.type == sf::Event::Closed)
                 window.close();
-            if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && ejnr < 9)
+            if(ivykis.type == sf::Event::MouseButtonReleased && ejnr < 9)
             {
                 if(Ejimas(ejnr))
+                {
                     ejnr++;
+                }
             }
         }
         window.clear(sf::Color::White);
