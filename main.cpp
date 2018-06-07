@@ -1,4 +1,5 @@
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
 struct Langelis
 {
@@ -26,8 +27,9 @@ public:
     void PrTekstas();
     bool Ejimas(int ejnr);
     bool PriklausoLang(sf::Vector2i poz, int lnr);
-    void KeistiTeksta(int ejnr, bool uzimtas);
-    bool ArBaiges();
+    void KeistiTeksta(std::string tekstas);
+    char ArBaiges();
+    void Pabaiga(char laim, int & ejnr);
     void Eiga();
 };
 
@@ -43,7 +45,7 @@ bool Zaidimas::TeksturuNuskaitymas()
 
 bool Zaidimas::SriftoNuskaitymas()
 {
-    return sriftas.loadFromFile("sriftai/arial.ttf");
+    return sriftas.loadFromFile("sriftai/Aileron-Regular.otf");
 }
 
 void Zaidimas::LangeliuNustatymas()
@@ -89,28 +91,17 @@ bool Zaidimas::PriklausoLang(sf::Vector2i poz, int lnr)
     return L[lnr].k.contains(poz.x, poz.y);
 }
 
-void Zaidimas::KeistiTeksta(int ejnr, bool uzimtas)
+void Zaidimas::KeistiTeksta(std::string tekstas)
 {
-    std::string zaid;
-    if(uzimtas)
-    {
-        zinute.setString("Sis langelis yra uzimtas, bandykite kita");
-        zinute.setPosition(0, 0);
-        zinute.move(309 - zinute.getLocalBounds().width/2, 30);
-    }
-    else
-    {
-        zaid = (ejnr % 2 == 1) ? "1-o Zaidejo eile" : "2-o Zaidejo eile";
-        zinute.setString(zaid);
-        zinute.setPosition(0, 0);
-        zinute.move(309 - zinute.getLocalBounds().width/2, 30);
-    }
-
+    zinute.setString(tekstas);
+    zinute.setPosition(0, 0);
+    zinute.move(309 - zinute.getLocalBounds().width/2, 30);
 }
 
 bool Zaidimas::Ejimas(int ejnr)
 {
     sf::Vector2i pos = sf::Mouse::getPosition(window);
+    std::string zin;
     for(int i = 0; i < 9; i++)
     {
         if(PriklausoLang(pos, i))
@@ -119,33 +110,60 @@ bool Zaidimas::Ejimas(int ejnr)
             {
                 P[ejnr] = (ejnr%2) ? Pfigo : Pfigx;
                 P[ejnr].setPosition(L[i].k.left, L[i].k.top);
-                L[i].tipas = (ejnr%2 == 0) ? 1 : 2;
-                KeistiTeksta(ejnr, false);
+                L[i].tipas = (ejnr%2 == 0) ? -1 : 1;
+                zin = (ejnr%2 == 1) ? "1-o Zaidejo eile" : "2-o Zaidejo eile";
+                KeistiTeksta(zin);
                 return true;
             }
             else
             {
-                KeistiTeksta(ejnr, true);
+                zin = "Ðis langelis yra uþimtas, bandykite kita";
+                KeistiTeksta(zin);
                 return false;
             }
         }
     }
 }
 
-bool Zaidimas::ArBaiges()
+char Zaidimas::ArBaiges()
 {
+    int s1, s2;
     for(int i = 0; i < 3; i++)
     {
+        s1 = 0;
+        s2 = 0;
         for(int j = 0; j < 3; j++)
         {
-
+            s1 += L[i*3+j].tipas;
+            s2 += L[j*3+i].tipas;
         }
+        if(s1 == -3 || s2 == -3)
+            return 'X';
+        else if(s1 == 3 || s2 == 3)
+            return 'O';
     }
+    s1 = L[0].tipas + L[4].tipas + L[8].tipas;
+    s2 = L[6].tipas + L[4].tipas + L[2].tipas;
+    if(s1 == -3 || s2 == -3)
+        return 'X';
+    else if(s1 == 3 || s2 == 3)
+        return 'O';
+    return 'N';
+}
+
+void Zaidimas::Pabaiga(char laim, int & ejnr)
+{
+    ejnr = 10;
+    if(laim == 'X')
+        KeistiTeksta("Laimejo pirmasis zaidejas, zenklu 'X'.");
+    else
+        KeistiTeksta("Laimejo antrasis zaidejas, zenklu 'O'.");
 }
 
 void Zaidimas::Eiga()
 {
     int ejnr = 0;
+    char laim;
     PrTekstas();
     LangeliuNustatymas();
     while(window.isOpen())
@@ -159,6 +177,9 @@ void Zaidimas::Eiga()
                 if(Ejimas(ejnr))
                 {
                     ejnr++;
+                    laim = ArBaiges();
+                    if(laim != 'N')
+                        Pabaiga(laim, ejnr);
                 }
             }
         }
